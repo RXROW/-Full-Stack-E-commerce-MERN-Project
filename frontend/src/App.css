@@ -1,0 +1,8 @@
+
+
+
+.hero-container{
+    background-image: url("./assets/images/bg-hero.jpg");
+    background-repeat: no-repeat;
+    background-size: cover;
+}
