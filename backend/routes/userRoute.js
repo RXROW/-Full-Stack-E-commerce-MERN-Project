@@ -2,6 +2,7 @@ const express = require("express");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
+const { protect } = require("../middleware/authMiddleware");
 
 const router = express.Router();
 
@@ -18,12 +19,12 @@ router.post("/register", async (req, res) => {
       return res.status(400).json({ msg: "User already exists" });
     }
 
-    // 🔒 Hash password
+    // Hash password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
     console.log(hashedPassword);
 
-    // 🆕 Create new user with default role ("customer")
+    // Create new user with default role ("customer")
     user = new User({
       name,
       email,
@@ -32,7 +33,7 @@ router.post("/register", async (req, res) => {
     });
     await user.save();
 
-    // 🔑 Generate JWT Token
+    // Generate JWT Token
     const payload = { user: { id: user.id, role: user.role } };
     const token = jwt.sign(payload, process.env.JWT_SECRET, {
       expiresIn: "7d",
@@ -55,7 +56,7 @@ router.post("/login", async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    // 🔍 Check if user exists
+    // Check if user exists
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(400).json({ msg: "Invalid credentials" });
@@ -66,7 +67,7 @@ router.post("/login", async (req, res) => {
       return res.status(400).json({ msg: "Invalid credentials" });
     }
 
-    // 🔑 Generate JWT Token
+    // Generate JWT Token
     const payload = { user: { id: user.id, role: user.role } };
     const token = jwt.sign(payload, process.env.JWT_SECRET, {
       expiresIn: "7d",
@@ -85,6 +86,13 @@ router.post("/login", async (req, res) => {
     console.error(error.message);
     res.status(500).send("Server Error");
   }
+});
+
+// @route   GET /api/users/profile
+// @desc    Get logged-in user's profile (Protected Route)
+// @access  Private
+router.get("/profile", protect, async (req, res) => {
+    res.json(req.user);
 });
 
 module.exports = router;
