@@ -123,4 +123,106 @@ router.delete("/:id", protect, admin, async (req, res) => {
 });
 
 
+
+ // @route   GET /api/products
+// @desc    Get all products with optional query filters
+// @access  Public
+
+router.get("/", async (req, res) => {
+  try {
+    const {
+      collection,
+      size,
+      color,
+      gender,
+      minPrice,
+      maxPrice,
+      sortBy,
+      search,
+      category,
+      material,
+      brand,
+      limit,
+    } = req.query;
+
+    // ==== Query Builder ====
+    const query = {};
+
+    if (collection && collection.toLowerCase() !== "all") {
+      query.collections = collection;
+    }
+
+    if (category && category.toLowerCase() !== "all") {
+      query.category = category;
+    }
+
+    if (material) {
+      query.material = { $in: material.split(",") };
+    }
+
+    if (brand) {
+      query.brand = { $in: brand.split(",") };
+    }
+
+    if (size) {
+      query.size = { $in: size.split(",") };
+    }
+
+    if (color) {
+      query.color = { $in: [color] };
+    }
+
+    if (gender) {
+      query.gender = gender;
+    }
+
+    if (minPrice || maxPrice) {
+      query.price = {};
+      if (minPrice) query.price.$gte = Number(minPrice);
+      if (maxPrice) query.price.$lte = Number(maxPrice);
+    }
+
+    if (search) {
+      query.$or = [
+        { name: { $regex: search, $options: "i" } },
+        { description: { $regex: search, $options: "i" } },
+      ];
+    }
+
+    // ==== Sort Logic ====
+    const sortOptions = {
+      priceAsc: { price: 1 },
+      priceDesc: { price: -1 },
+      popularity: { rating: -1 },
+    };
+
+    const sort = sortOptions[sortBy] || {};
+
+    // ==== Limit ====
+    const resultLimit = parseInt(limit) || 20;
+
+    // ==== Fetch Data ====
+    const products = await Product.find(query)
+      .sort(sort)
+      .limit(resultLimit);
+
+    res.status(200).json({
+      success: true,
+      count: products.length,
+      products,
+    });
+  } catch (error) {
+    console.error("Error fetching products:", error.message);
+    res.status(500).json({
+      success: false,
+      message: "Something went wrong. Please try again later.",
+    });
+  }
+});
+
+
+
+
+
+
 module.exports = router;

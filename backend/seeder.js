@@ -42,8 +42,7 @@ const seedData = async () => {
             return { ...product, user: UserID };
       } 
         
-     );
-
+    ); 
     await Product.insertMany(sampleProducts);
 
     console.log("Data Imported Successfully!");
