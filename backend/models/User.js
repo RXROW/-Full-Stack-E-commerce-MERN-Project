@@ -1,5 +1,4 @@
-const mongoose = require("mongoose");
-const bcrypt = require("bcryptjs");
+const mongoose = require("mongoose"); 
 
 const userSchema = new mongoose.Schema(
   {
@@ -29,9 +28,6 @@ const userSchema = new mongoose.Schema(
       default: "customer",
     },
   },
-  { timestamps: true } // Adds createdAt & updatedAt timestamps
-);
- 
-
-// Export the model
+  { timestamps: true }  
+); 
 module.exports = mongoose.model("User", userSchema);
