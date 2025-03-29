@@ -20,7 +20,7 @@ router.post("/", protect, admin, async (req, res) => {
       colors,
       sizes,
       collections,
-      materail,
+      material,
       gender,
       images,
       isFeatured,
@@ -42,7 +42,7 @@ router.post("/", protect, admin, async (req, res) => {
       colors,
       sizes,
       collections,
-      materail,
+      material,
       gender,
       images,
       isFeatured,
@@ -84,7 +84,7 @@ router.put("/:id", protect, admin, async (req, res) => {
     product.colors = req.body.colors || product.colors;
     product.sizes = req.body.sizes || product.sizes;
     product.collections = req.body.collections || product.collections;
-    product.materail = req.body.materail || product.materail;
+    product.material = req.body.material || product.material;
     product.gender = req.body.gender || product.gender;
     product.images = req.body.images || product.images;
     product.isFeatured = req.body.isFeatured ?? product.isFeatured;
@@ -125,8 +125,8 @@ router.delete("/:id", protect, admin, async (req, res) => {
 
 
  // @route   GET /api/products
-// @desc    Get all products with optional query filters
-// @access  Public
+ // @desc    Get all products with optional query filters
+ // @access  Public
 
 router.get("/", async (req, res) => {
   try {
@@ -219,6 +219,106 @@ router.get("/", async (req, res) => {
     });
   }
 });
+
+// @route GET /api/products/best-seller
+// @desc Retrieve the product with highest rating
+// @access Public
+
+router.get("/best-seller", async (req, res) => {
+  try {
+    const bestSeller = await Product.findOne().sort({ rating: -1 });
+
+    if (bestSeller) {
+      res.json(bestSeller);
+    } else {
+      res.status(404).json({ message: "No best seller found" });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Server Error");
+  }
+});
+
+
+
+
+
+// @route GET /api/products/new-arrivals
+// @desc Retrieve latest 8 products - Creation date
+// @access Public
+
+router.get("/new-arrivals", async (req, res) => {
+  try {
+    // Fetch latest 8 products
+    const newArrivals = await Product.find()
+      .sort({ createdAt: -1 })
+      .limit(8);
+
+    res.json(newArrivals);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Server Error");
+  }
+});
+
+
+
+
+
+
+
+
+// @route   GET /api/products/:id
+// @desc    Get a single product by ID
+// @access  Public
+
+router.get("/:id", async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id);
+    if (product) {
+      res.json(product);
+    } else {
+      res.status(404).json({ message: "Product Not Found" });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Server Error");
+  }
+});
+
+
+
+// @route GET /api/products/similar/:id
+// @desc Retrieve similar products based on the current product's gender and category
+// @access Public
+
+router.get("/similar/:id", async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const product = await Product.findById(id);
+
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    const similarProducts = await Product.find({
+      _id: { $ne: id }, // Exclude the current product ID
+      gender: product.gender,
+      category: product.category,
+    }).limit(4);
+
+    res.json(similarProducts);
+  } catch (error) {
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+
+
+
+
+
 
 
 
