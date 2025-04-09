@@ -5,6 +5,7 @@ const app = express();
 const connectDB = require("./config/db"); // Import the DB connection function
 const userRoute = require("./routes/userRoute");  
 const productRoute = require("./routes/productRoute");  
+const cartRoute = require("./routes/cartRoute");  
 
 app.use(express.json());
 app.use(cors());
@@ -20,6 +21,7 @@ app.get("/", (req, res) => {
 
 app.use("/api/users", userRoute);
 app.use("/api/products", productRoute);
+app.use("/api/cart", cartRoute);
 
 
 
